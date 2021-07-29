@@ -22,7 +22,7 @@
 #define CHAMELEON_H
 
 #include "chameleontheme.h"
-//#include "AppMenuButtonGroup.h"
+#include "AppMenuButtonGroup.h"
 
 #include <KDecoration2/Decoration>
 #include <KDecoration2/DecorationButtonGroup>
@@ -35,7 +35,7 @@
 #include <QScreen>
 #include <QPainterPath>
 
-//using Material::AppMenuButtonGroup;
+using Material::AppMenuButtonGroup;
 
 class Settings;
 class ChameleonWindowTheme;
@@ -69,6 +69,13 @@ public:
     QIcon maximizeIcon() const;
     QIcon unmaximizeIcon() const;
     QIcon closeIcon() const;
+
+    QRect titleBarRect() const;
+    QPoint windowPos() const;
+    QColor titleBarBackgroundColor() const;
+    QColor titleBarForegroundColor() const;
+    int getTextWidth(const QString text, bool showMnemonic = false) const;
+    int appMenuButtonHorzPadding() const;
 
 signals:
     void noTitleBarChanged(bool noTitleBar);
@@ -121,7 +128,7 @@ private:
 
     KDecoration2::DecorationButtonGroup *m_leftButtons = nullptr;
     KDecoration2::DecorationButtonGroup *m_rightButtons = nullptr;
-//    AppMenuButtonGroup *m_menuButtons = nullptr;
+    AppMenuButtonGroup *m_menuButtons = nullptr;
 
     QPointer<KWin::EffectWindow> m_effect;
 };

@@ -18,6 +18,7 @@ find_package(Qt5 CONFIG REQUIRED COMPONENTS Core DBus Qml)
 find_package(KF5CoreAddons REQUIRED)
 find_package(KF5Config REQUIRED)
 find_package(KF5WindowSystem REQUIRED)
+find_package(KF5GuiAddons REQUIRED)
 find_package(KDecoration2 REQUIRED)
 find_package(Qt5X11Extras REQUIRED)
 include(ECMQtDeclareLoggingCategory)
@@ -43,6 +44,12 @@ add_library(
         chameleonconfig.cpp
         chameleonwindowtheme.cpp
         kwinutils.cpp
+        AppMenuButtonGroup.cpp
+        AppMenuModel.cpp
+        Button.cpp
+        TextButton.cpp
+        AppMenuButton.cpp
+        MenuOverflowButton.cpp
         themes.qrc
 )
 
@@ -58,6 +65,7 @@ target_link_libraries(
     KF5::CoreAddons
     KF5::ConfigCore
     KF5::WindowSystem
+    KF5::GuiAddons
 )
 
 install(TARGETS ${TARGET_NAME} DESTINATION ${QT_INSTALL_PLUGINS}/org.kde.kdecoration2)

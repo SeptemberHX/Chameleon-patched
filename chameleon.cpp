@@ -39,6 +39,7 @@
 #include <QDebug>
 #include <QScreen>
 #include <QGuiApplication>
+#include <KWindowSystem>
 
 Q_DECLARE_METATYPE(QPainterPath)
 
@@ -102,11 +103,6 @@ void Chameleon::init()
     connect(m_theme, &ChameleonWindowTheme::windowPixelRatioChanged, this, &Chameleon::updateShadow);
     connect(m_theme, &ChameleonWindowTheme::windowPixelRatioChanged, this, &Chameleon::updateTitleBarArea);
     connect(qGuiApp, &QGuiApplication::fontChanged, this, &Chameleon::updateTitleGeometry);
-
-//    m_menuButtons = new AppMenuButtonGroup(this);
-//    connect(m_menuButtons, &AppMenuButtonGroup::menuUpdated,
-//            this, &Chameleon::updateButtonsGeometry);
-//    m_menuButtons->updateAppMenuModel();
 
     m_initialized = true;
 }
@@ -283,6 +279,10 @@ void Chameleon::initButtons()
 {
     m_leftButtons = new KDecoration2::DecorationButtonGroup(KDecoration2::DecorationButtonGroup::Position::Left, this, &ChameleonButton::create);
     m_rightButtons = new KDecoration2::DecorationButtonGroup(KDecoration2::DecorationButtonGroup::Position::Right, this, &ChameleonButton::create);
+//    m_menuButtons = new AppMenuButtonGroup(this);
+//    connect(m_menuButtons, &AppMenuButtonGroup::menuUpdated,
+//            this, &Chameleon::updateButtonsGeometry);
+//    m_menuButtons->updateAppMenuModel();
 }
 
 void Chameleon::updateButtonsGeometry()
@@ -638,4 +638,81 @@ QColor Chameleon::getBackgroundColor() const
     auto c = client().data();
 
     return c->color(c->isActive() ? KDecoration2::ColorGroup::Active : KDecoration2::ColorGroup::Inactive, KDecoration2::ColorRole::TitleBar);
+}
+
+QPoint Chameleon::windowPos() const {
+    const auto *decoratedClient = client().toStrongRef().data();
+    WId windowId = decoratedClient->windowId();
+
+    if (KWindowSystem::isPlatformX11()) {
+#if HAVE_X11
+        //--- From: BreezeSizeGrip.cpp
+        /*
+        get root position matching position
+        need to use xcb because the embedding of the widget
+        breaks QT's mapToGlobal and other methods
+        */
+        auto connection( QX11Info::connection() );
+        xcb_get_geometry_cookie_t cookie( xcb_get_geometry( connection, windowId ) );
+        ScopedPointer<xcb_get_geometry_reply_t> reply( xcb_get_geometry_reply( connection, cookie, nullptr ) );
+        if (reply) {
+            // translate coordinates
+            xcb_translate_coordinates_cookie_t coordCookie( xcb_translate_coordinates(
+                connection, windowId, reply.data()->root,
+                -reply.data()->border_width,
+                -reply.data()->border_width ) );
+
+            ScopedPointer< xcb_translate_coordinates_reply_t> coordReply( xcb_translate_coordinates_reply( connection, coordCookie, nullptr ) );
+
+            if (coordReply) {
+                return QPoint(coordReply.data()->dst_x, coordReply.data()->dst_y);
+            }
+        }
+#else
+        Q_UNUSED(windowId)
+#endif
+
+    } else if (KWindowSystem::isPlatformWayland()) {
+#if HAVE_Wayland
+        // TODO
+#endif
+    }
+
+    return QPoint(0, 0);
+}
+
+QColor Chameleon::titleBarBackgroundColor() const {
+    const auto *decoratedClient = client().toStrongRef().data();
+    const auto group = decoratedClient->isActive()
+                       ? KDecoration2::ColorGroup::Active
+                       : KDecoration2::ColorGroup::Inactive;
+    const qreal opacity = decoratedClient->isActive()
+                          ? 0.8
+                          : 0.8;
+    QColor color = decoratedClient->color(group, KDecoration2::ColorRole::TitleBar);
+    color.setAlphaF(opacity);
+    return color;}
+
+QColor Chameleon::titleBarForegroundColor() const {
+    const auto *decoratedClient = client().toStrongRef().data();
+    const auto group = decoratedClient->isActive()
+                       ? KDecoration2::ColorGroup::Active
+                       : KDecoration2::ColorGroup::Inactive;
+    return decoratedClient->color(group, KDecoration2::ColorRole::Foreground);
+}
+
+int Chameleon::getTextWidth(const QString text, bool showMnemonic) const {
+    const QFontMetrics fontMetrics(settings()->font());
+    const QRect textRect(titleBarRect());
+    int flags = showMnemonic ? Qt::TextShowMnemonic : Qt::TextHideMnemonic;
+    const QRect boundingRect = fontMetrics.boundingRect(textRect, flags, text);
+    return boundingRect.width();
+}
+
+QRect Chameleon::titleBarRect() const {
+    return QRect(0, 0, size().width(), titleBarHeight());
+}
+
+int Chameleon::appMenuButtonHorzPadding() const {
+    return settings()->smallSpacing();
 }
