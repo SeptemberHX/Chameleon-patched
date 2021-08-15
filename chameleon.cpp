@@ -104,14 +104,9 @@ void Chameleon::init()
     connect(m_theme, &ChameleonWindowTheme::windowPixelRatioChanged, this, &Chameleon::updateTitleBarArea);
     connect(qGuiApp, &QGuiApplication::fontChanged, this, &Chameleon::updateTitleGeometry);
 
-//    m_menuButtons = new AppMenuButtonGroup(this);
-//    connect(m_menuButtons, &AppMenuButtonGroup::menuUpdated,
-//            this, &Chameleon::updateButtonsGeometry);
-//    m_menuButtons->updateAppMenuModel();
-
     m_initialized = true;
 
-    qCDebug(category) << "Chameleon init ends";
+    qCDebug(category) << this->client().toStrongRef().data()->windowId() << "Chameleon init ends";
 }
 
 void Chameleon::paint(QPainter *painter, const QRect &repaintArea)
@@ -286,6 +281,11 @@ void Chameleon::initButtons()
 {
     m_leftButtons = new KDecoration2::DecorationButtonGroup(KDecoration2::DecorationButtonGroup::Position::Left, this, &ChameleonButton::create);
     m_rightButtons = new KDecoration2::DecorationButtonGroup(KDecoration2::DecorationButtonGroup::Position::Right, this, &ChameleonButton::create);
+
+    m_menuButtons = new AppMenuButtonGroup(this);
+    //    connect(m_menuButtons, &AppMenuButtonGroup::menuUpdated,
+    //            this, &Chameleon::updateButtonsGeometry);
+    //    m_menuButtons->updateAppMenuModel();
 }
 
 void Chameleon::updateButtonsGeometry()

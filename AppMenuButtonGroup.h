@@ -1,0 +1,50 @@
+//
+// Created by ragdoll on 2021/8/15.
+//
+
+#ifndef CHAMELEON_PATCHED_APPMENUBUTTONGROUP_H
+#define CHAMELEON_PATCHED_APPMENUBUTTONGROUP_H
+
+#include <KDecoration2/DecorationButtonGroup>
+#include <KDecoration2/Decoration>
+
+#include "appmenu/appmenumodel.h"
+
+using KDecoration2::DecorationButtonGroup;
+using KDecoration2::Decoration;
+
+/*
+ * 根据 KDE 官方文档 https://api.kde.org/kdecoration/html/classKDecoration2_1_1DecorationButtonGroup.html，
+ * DecorationButtonGroup 帮助我们屏蔽了 buttons 的布局等通用问题，我们只需要往里面添加我们想要的 button 即可。
+ *
+ * 显然，根据 Decoration 的文档，每个窗口是由 DecorationClient 负责一些只读属性的获取，Decoration 与 DecorationClient 一对一绑定。
+ * 也就意味着每个窗口都会创建一个 Decoration 实例。在这里也就是 Chameleon 实例。而 AppMenuButtonGroup 中涉及到窗口的菜单获取，且在每个
+ * Chameleon 中都有一个实例，在该类中我们需要创建一个实例，来监听每个窗口的菜单的变化情况并获取菜单。
+ */
+class AppMenuButtonGroup : public DecorationButtonGroup {
+
+    Q_OBJECT
+
+public:
+    explicit AppMenuButtonGroup(Decoration *decoration);
+
+    // 这个方法负责绘制。但是根据官方文档，默认实现会调用每个 DecorationButton 的绘制，
+    // 所以我们只需要正确的插入 button 以及实现 button 绘制即可
+    // void paint(QPainter *painter, const QRect &repaintArea) override;
+
+private slots:
+    // 负责在菜单变化后，获取菜单内容
+    void updateMenu();
+
+private:
+    // 以下是一些辅助函数
+
+    // 当前 AppMenuButtonGroup 对应的窗口 id
+    WId windowId() const;
+
+    // 负责监听给定窗口的菜单变化以及获取菜单
+    AppMenuModel *appMenuModel;
+};
+
+
+#endif //CHAMELEON_PATCHED_APPMENUBUTTONGROUP_H

@@ -22,7 +22,7 @@
 #define CHAMELEON_H
 
 #include "chameleontheme.h"
-//#include "AppMenuButtonGroup.h"
+#include "AppMenuButtonGroup.h"
 
 #include <KDecoration2/Decoration>
 #include <KDecoration2/DecorationButtonGroup>
@@ -35,11 +35,14 @@
 #include <QScreen>
 #include <QPainterPath>
 
-//using Material::AppMenuButtonGroup;
 
 class Settings;
 class ChameleonWindowTheme;
 
+/*
+ * 详细见文档 https://api.kde.org/kdecoration/html/classKDecoration2_1_1Decoration.html
+ * 理论上只需要阅读下面 override 的方法即可
+ */
 class Chameleon : public KDecoration2::Decoration
 {
     Q_OBJECT
@@ -75,6 +78,7 @@ signals:
     void effectInitialized(KWin::EffectWindow *effect);
 
 protected:
+    // 这个函数会被自动调用进行初始化
     void init() override;
 
 private:
@@ -121,7 +125,7 @@ private:
 
     KDecoration2::DecorationButtonGroup *m_leftButtons = nullptr;
     KDecoration2::DecorationButtonGroup *m_rightButtons = nullptr;
-//    AppMenuButtonGroup *m_menuButtons = nullptr;
+    AppMenuButtonGroup *m_menuButtons = nullptr;
 
     QPointer<KWin::EffectWindow> m_effect;
 };

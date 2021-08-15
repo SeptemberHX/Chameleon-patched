@@ -5,16 +5,11 @@ set(CMAKE_AUTORCC ON)
 
 add_definitions(-DTARGET_NAME=\\"${TARGET_NAME}\\")
 
-include (FeatureSummary)
 find_package (ECM 0.0.9 REQUIRED NO_MODULE)
 set (CMAKE_MODULE_PATH
         ${CMAKE_MODULE_PATH}
         ${ECM_MODULE_PATH}
         )
-
-include (ECMInstallIcons)
-include (KDEInstallDirs)
-include (KDECMakeSettings)
 
 find_package(Qt5 CONFIG REQUIRED COMPONENTS Core DBus Qml)
 find_package(KF5CoreAddons REQUIRED)
@@ -31,6 +26,8 @@ option(DISABLE_LIB_KWIN_XCB "Don't use libkwin-xcb" OFF)
 
 set(CMAKE_CXX_STANDARD 11)
 
+add_subdirectory("appmenu")
+
 add_library(
     ${TARGET_NAME}
     MODULE
@@ -44,15 +41,15 @@ add_library(
         chameleonwindowtheme.cpp
         kwinutils.cpp
         themes.qrc
-        debug.h)
+        debug.h AppMenuButtonGroup.cpp AppMenuButtonGroup.h)
 
-target_link_libraries(
-    ${TARGET_NAME}
-    PUBLIC
+target_link_libraries(${TARGET_NAME}
+PUBLIC
     Qt5::Core
     Qt5::X11Extras
     Qt5::Qml
-    PRIVATE
+    dde-appmenu
+PRIVATE
     KDecoration2::KDecoration
     KF5::CoreAddons
     KF5::ConfigCore
