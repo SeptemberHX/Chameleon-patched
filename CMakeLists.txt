@@ -1,6 +1,8 @@
 set(TARGET_NAME "deepin-chameleon")
 
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
 add_definitions(-DTARGET_NAME=\\"${TARGET_NAME}\\")
 
 include (FeatureSummary)
@@ -29,8 +31,6 @@ option(DISABLE_LIB_KWIN_XCB "Don't use libkwin-xcb" OFF)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_subdirectory(libdbusmenuqt)
-
 add_library(
     ${TARGET_NAME}
     MODULE
@@ -44,7 +44,7 @@ add_library(
         chameleonwindowtheme.cpp
         kwinutils.cpp
         themes.qrc
-)
+        debug.h)
 
 target_link_libraries(
     ${TARGET_NAME}
@@ -52,7 +52,6 @@ target_link_libraries(
     Qt5::Core
     Qt5::X11Extras
     Qt5::Qml
-    dbusmenuqt
     PRIVATE
     KDecoration2::KDecoration
     KF5::CoreAddons

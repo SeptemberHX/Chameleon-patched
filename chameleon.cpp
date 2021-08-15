@@ -39,6 +39,7 @@
 #include <QDebug>
 #include <QScreen>
 #include <QGuiApplication>
+#include "debug.h"
 
 Q_DECLARE_METATYPE(QPainterPath)
 
@@ -109,6 +110,8 @@ void Chameleon::init()
 //    m_menuButtons->updateAppMenuModel();
 
     m_initialized = true;
+
+    qCDebug(category) << "Chameleon init ends";
 }
 
 void Chameleon::paint(QPainter *painter, const QRect &repaintArea)
