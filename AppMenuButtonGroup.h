@@ -50,6 +50,9 @@ public slots:
     // 负责在菜单变化后，获取菜单内容
     void updateMenu();
 
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
 private slots:
     void onMenuAboutToHide();
 
@@ -61,6 +64,8 @@ private:
 
     // 清除当前所有的 button 并释放内存
     void resetButtons();
+
+    KDecoration2::DecorationButton* buttonAt(int x, int y) const;
 
     // 负责监听给定窗口的菜单变化以及获取菜单
     AppMenuModel *m_appMenuModel;

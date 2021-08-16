@@ -2,16 +2,19 @@
 // Created by ragdoll on 2021/8/15.
 //
 
+#include "AppMenuButton.h"
 #include "AppMenuButtonGroup.h"
 #include "debug.h"
 #include "TextButton.h"
 #include "MenuOverflowButton.h"
 
+#include <QWindow>
 #include <QMenu>
 #include <KDecoration2/DecoratedClient>
 #include <KDecoration2/DecorationButton>
 
 using Material::TextButton;
+using Material::AppMenuButton;
 using Material::MenuOverflowButton;
 
 AppMenuButtonGroup::AppMenuButtonGroup(Decoration *decoration)
@@ -26,6 +29,7 @@ AppMenuButtonGroup::AppMenuButtonGroup(Decoration *decoration)
     this->m_appMenuModel = new AppMenuModel(this);
     connect(this->m_appMenuModel, &AppMenuModel::modelNeedsUpdate, this, &AppMenuButtonGroup::updateMenu);
     this->m_appMenuModel->setWinId(this->windowId());
+
 
     qCDebug(category) << this->windowId() << "AppMenuButtonGroup init ends";
 }
@@ -45,9 +49,9 @@ void AppMenuButtonGroup::updateMenu() {
     auto *decoratedClient = deco->client().toStrongRef().data();
 
     // Don't display AppMenu in modal windows.
-    if (decoratedClient->isModal()) {
+    if (this->m_appMenuModel->rowCount() == 0 || decoratedClient->isModal()) {
         resetButtons();
-        qDebug() << "Decoration::updateAppMenuModel exits due to isModal";
+        qDebug() << "Decoration::updateAppMenuModel exits due to isModal or empty menu";
         return;
     }
 
@@ -82,7 +86,7 @@ void AppMenuButtonGroup::updateMenu() {
         addButton(QPointer<KDecoration2::DecorationButton>(b));
     }
     m_overflowIndex = m_appMenuModel->rowCount();
-//    addButton(new MenuOverflowButton(deco, m_overflowIndex, this));
+    addButton(new MenuOverflowButton(deco, m_overflowIndex, this));
 
     emit menuUpdated();
     qCDebug(category) << this->windowId() << "AppMenuButtonGroup updateMenu ends";
@@ -93,6 +97,7 @@ void AppMenuButtonGroup::resetButtons() {
     removeButton(KDecoration2::DecorationButtonType::Custom);
     while (!list.isEmpty()) {
         auto item = list.takeFirst();
+        item.data()->setVisible(false);
         delete item;
     }
     emit menuUpdated();
@@ -175,6 +180,8 @@ void AppMenuButtonGroup::trigger(int buttonIndex) {
         // xcb_ungrab_pointer( connection, XCB_TIME_CURRENT_TIME );
         //---
 
+        actionMenu->adjustSize();
+        actionMenu->winId();//create window handle
         actionMenu->installEventFilter(this);
 
         if (!KWindowSystem::isPlatformWayland()) {
@@ -225,13 +232,13 @@ void AppMenuButtonGroup::setCurrentIndex(int set) {
 }
 
 void AppMenuButtonGroup::updateOverflow(QRectF availableRect) {
-    // qCDebug(category) << "updateOverflow" << availableRect;
+    qCDebug(category) << "updateOverflow" << availableRect;
     bool showOverflow = false;
     for (KDecoration2::DecorationButton *button : buttons()) {
-        // qCDebug(category) << "    " << button->geometry() << button;
+        qCDebug(category) << "    " << button->geometry() << button;
         if (qobject_cast<MenuOverflowButton *>(button)) {
             button->setVisible(showOverflow);
-            // qCDebug(category) << "    showOverflow" << showOverflow;
+            qCDebug(category) << "    showOverflow" << showOverflow;
         } else if (qobject_cast<TextButton *>(button)) {
             if (button->isEnabled()) {
                 if (availableRect.contains(button->geometry())) {
@@ -260,4 +267,75 @@ void AppMenuButtonGroup::setOverflowing(bool set) {
 
 bool AppMenuButtonGroup::isMenuOpen() const {
     return 0 <= m_currentIndex;
+}
+
+bool AppMenuButtonGroup::eventFilter(QObject *watched, QEvent *event) {
+    auto *menu = qobject_cast<QMenu *>(watched);
+
+    if (!menu) {
+        return false;
+    }
+
+    if (event->type() == QEvent::KeyPress) {
+        auto *e = static_cast<QKeyEvent *>(event);
+
+        // TODO right to left languages
+        if (e->key() == Qt::Key_Left) {
+            int desiredIndex = m_currentIndex - 1;
+            trigger(desiredIndex);
+            return true;
+        } else if (e->key() == Qt::Key_Right) {
+            if (menu->activeAction() && menu->activeAction()->menu()) {
+                return false;
+            }
+
+            int desiredIndex = m_currentIndex + 1;
+            trigger(desiredIndex);
+            return true;
+        }
+
+    } else if (event->type() == QEvent::MouseMove) {
+        auto *e = static_cast<QMouseEvent *>(event);
+
+        const auto *deco = qobject_cast<Chameleon *>(decoration());
+
+        QPoint decoPos(e->globalPos());
+        decoPos -= deco->windowPos();
+        decoPos.ry() += deco->titleBarHeight();
+         qCDebug(category) << "MouseMove";
+         qCDebug(category) << "       globalPos" << e->globalPos();
+         qCDebug(category) << "       windowPos" << deco->windowPos();
+         qCDebug(category) << "  titleBarHeight" << deco->titleBarHeight();
+
+        KDecoration2::DecorationButton* item = buttonAt(decoPos.x(), decoPos.y());
+        if (!item) {
+            return false;
+        }
+
+        AppMenuButton* appMenuButton = qobject_cast<AppMenuButton *>(item);
+        if (appMenuButton) {
+            if (m_currentIndex != appMenuButton->buttonIndex()
+            && appMenuButton->isVisible()
+            && appMenuButton->isEnabled()
+            ) {
+                trigger(appMenuButton->buttonIndex());
+            }
+            return false;
+        }
+    }
+
+    return false;
+}
+
+KDecoration2::DecorationButton *AppMenuButtonGroup::buttonAt(int x, int y) const {
+    for (int i = 0; i < buttons().length(); i++) {
+        KDecoration2::DecorationButton* button = buttons().value(i);
+        if (!button->isVisible()) {
+            continue;
+        }
+        if (button->geometry().contains(x, y)) {
+            return button;
+        }
+    }
+    return nullptr;
 }

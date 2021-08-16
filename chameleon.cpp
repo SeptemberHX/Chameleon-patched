@@ -283,8 +283,8 @@ void Chameleon::initButtons()
     m_rightButtons = new KDecoration2::DecorationButtonGroup(KDecoration2::DecorationButtonGroup::Position::Right, this, &ChameleonButton::create);
 
     m_menuButtons = new AppMenuButtonGroup(this);
-//    connect(m_menuButtons, &AppMenuButtonGroup::menuUpdated,
-//            this, &Chameleon::updateButtonsGeometry);
+    connect(m_menuButtons, &AppMenuButtonGroup::menuUpdated,
+            this, &Chameleon::updateButtonsGeometry);
 //    m_menuButtons->updateMenu();
 }
 
@@ -363,26 +363,35 @@ void Chameleon::updateTitleGeometry()
     // 使用系统字体，不要使用 settings() 中的字体
     const QFontMetricsF fontMetrics(qGuiApp->font());
     int full_width = fontMetrics.width(m_title) * m_theme->windowPixelRatio();
+    const bool appMenuVisible = !m_menuButtons->buttons().isEmpty();
 
     if (m_config->titlebar.area == Qt::TopEdge || m_config->titlebar.area == Qt::BottomEdge) {
-        int buttons_width = m_leftButtons->geometry().width() 
+        int buttons_width = m_leftButtons->geometry().width()
             + m_rightButtons->geometry().width() + 2 * s->smallSpacing();
+        if (appMenuVisible) {
+            buttons_width += m_menuButtons->geometry().width() + s->smallSpacing();
+        }
+        qCDebug(category) << "buttons_width =" << buttons_width;
 
         m_titleArea.setWidth(m_titleArea.width() - buttons_width);
         m_titleArea.moveLeft(m_leftButtons->geometry().right() + s->smallSpacing());
+        if (appMenuVisible) {
+            m_titleArea.moveLeft(m_menuButtons->geometry().right() + s->smallSpacing());
+        }
 
-        if (full_width < (m_titleArea.right() - titleBar().center().x()) * 2) {
+        QRect leftArea = m_titleArea;
+        if (full_width < (titleBar().center().x() - m_titleArea.left()) * 2) {
             m_titleArea.setWidth(full_width);
             m_titleArea.moveCenter(titleBar().center());
 
         } else if (full_width > m_titleArea.width()) {
             m_title = fontMetrics.elidedText(m_title,
                     Qt::ElideRight, qMax(m_titleArea.width(), m_titleArea.height()));
-            m_titleArea.moveRight(m_rightButtons->geometry().left() + s->smallSpacing());
+            m_titleArea.moveCenter(leftArea.center());
 
         } else {
             m_titleArea.setWidth(full_width);
-            m_titleArea.moveRight(m_rightButtons->geometry().left() + s->smallSpacing());
+            m_titleArea.moveCenter(leftArea.center());
         }
 
     } else  {
@@ -407,6 +416,7 @@ void Chameleon::updateTitleGeometry()
         }
     }
 
+    qCDebug(category) << "m_titleArea =" << m_titleArea;
     update();
 }
 
