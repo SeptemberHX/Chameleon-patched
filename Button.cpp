@@ -103,7 +103,10 @@ void Button::paint(QPainter *painter, const QRect &repaintRegion)
     Q_UNUSED(repaintRegion)
 
     // Buttons are coded assuming 24 units in size.
-    const QRectF buttonRect = geometry();
+    QRectF buttonRect = geometry();
+    buttonRect.setHeight(qMin(30.0, geometry().height()));
+    buttonRect.moveCenter(geometry().center());
+
     const QRectF contentRect = contentArea();
 
     const qreal iconScale = contentRect.height()/24;
