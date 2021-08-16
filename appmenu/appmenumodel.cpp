@@ -54,12 +54,12 @@ static QHash<QByteArray, xcb_atom_t> s_atoms;
 #endif
 
 
-class KDBusMenuImporter : public DBusMenuImporter
+class KDBusMenuImporter : public MDBusMenuImporter
 {
 
 public:
     KDBusMenuImporter(const QString &service, const QString &path, QObject *parent)
-        : DBusMenuImporter(service, path, parent) {
+        : MDBusMenuImporter(service, path, parent) {
         qCDebug(category) << "KDBusMenuImporter init ends in thread" << thread();
     }
 
@@ -451,7 +451,6 @@ void AppMenuModel::updateApplicationMenu(const QString &serviceName, const QStri
     if (m_serviceName == serviceName && m_menuObjectPath == menuObjectPath) {
         if (m_importer) {
             qCDebug(category) << this->m_winId << "AppMenuModel::updateApplicationMenu tries to invoke updateMenu";
-            qCDebug(category) << this->m_winId << m_importer;
             QMetaObject::invokeMethod(m_importer, "updateMenu", Qt::DirectConnection);
         }
         qCDebug(category) << this->m_winId << "AppMenuModel::updateApplicationMenu ends 1";
@@ -470,9 +469,7 @@ void AppMenuModel::updateApplicationMenu(const QString &serviceName, const QStri
     m_importer = new KDBusMenuImporter(serviceName, menuObjectPath, this);
     QMetaObject::invokeMethod(m_importer, "updateMenu", Qt::QueuedConnection);
 
-    connect(m_importer.data(), &DBusMenuImporter::menuUpdated, this, [ = ](QMenu * menu) {
-        qCDebug(category) << this->m_winId << "AppMenuModel::menuUpdated starts";
-
+    connect(m_importer.data(), &MDBusMenuImporter::menuUpdated, this, [ = ](QMenu * menu) {
         m_menu = m_importer->menu();
 
         if (m_menu.isNull() || menu != m_menu) {
@@ -506,7 +503,7 @@ void AppMenuModel::updateApplicationMenu(const QString &serviceName, const QStri
         emit modelNeedsUpdate();
     });
 
-    connect(m_importer.data(), &DBusMenuImporter::actionActivationRequested, this, [this](QAction * action) {
+    connect(m_importer.data(), &MDBusMenuImporter::actionActivationRequested, this, [this](QAction * action) {
         // TODO submenus
         if (!m_menuAvailable || !m_menu) {
             return;

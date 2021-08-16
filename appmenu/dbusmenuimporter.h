@@ -30,22 +30,24 @@ class QDBusVariant;
 class QIcon;
 class QMenu;
 
-class DBusMenuImporterPrivate;
+class MDBusMenuImporterPrivate;
 
 /**
- * A DBusMenuImporter instance can recreate a menu serialized over DBus by
+ * A MDBusMenuImporter instance can recreate a menu serialized over DBus by
  * DBusMenuExporter
+ *
+ * 我也不知道为什么使用原来的名字 DBusMenuImporter 会导致不初始化、崩溃等问题，我也不知道为什么换了个名字就好使了
  */
-class DBusMenuImporter : public QObject
+class MDBusMenuImporter : public QObject
 {
     Q_OBJECT
 public:
     /**
-     * Creates a DBusMenuImporter listening over DBus on service, path
+     * Creates a MDBusMenuImporter listening over DBus on service, path
      */
-    DBusMenuImporter(const QString &service, const QString &path, QObject *parent = nullptr);
+    MDBusMenuImporter(const QString &service, const QString &path, QObject *parent = nullptr);
 
-    ~DBusMenuImporter() override;
+    ~MDBusMenuImporter() override;
 
 
     QAction *actionForId(int id) const;
@@ -102,9 +104,9 @@ private Q_SLOTS:
     void slotGetLayoutFinished(QDBusPendingCallWatcher *);
 
 private:
-    Q_DISABLE_COPY(DBusMenuImporter)
-    DBusMenuImporterPrivate *const d;
-    friend class DBusMenuImporterPrivate;
+    Q_DISABLE_COPY(MDBusMenuImporter)
+    MDBusMenuImporterPrivate *const d;
+    friend class MDBusMenuImporterPrivate;
 
     // Use Q_PRIVATE_SLOT to avoid exposing DBusMenuItemList
     Q_PRIVATE_SLOT(d, void slotItemsPropertiesUpdated(const DBusMenuItemList &updatedList, const DBusMenuItemKeysList &removedList))

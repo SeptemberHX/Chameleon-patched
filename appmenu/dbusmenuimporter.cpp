@@ -79,10 +79,10 @@ static QAction *createKdeTitle(QAction *action, QWidget *parent)
     return titleAction;
 }
 
-class DBusMenuImporterPrivate
+class MDBusMenuImporterPrivate
 {
 public:
-    DBusMenuImporter *q;
+    MDBusMenuImporter *q;
 
     ComCanonicalDbusmenuInterface *m_interface;
     QMenu *m_menu;
@@ -98,7 +98,7 @@ public:
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, q);
         watcher->setProperty(DBUSMENU_PROPERTY_ID, id);
         QObject::connect(watcher, &QDBusPendingCallWatcher::finished,
-                         q, &DBusMenuImporter::slotGetLayoutFinished);
+                         q, &MDBusMenuImporter::slotGetLayoutFinished);
 
         return watcher;
     }
@@ -275,12 +275,12 @@ public:
     }
 };
 
-DBusMenuImporter::DBusMenuImporter(const QString &service, const QString &path, QObject *parent)
+MDBusMenuImporter::MDBusMenuImporter(const QString &service, const QString &path, QObject *parent)
     : QObject(parent)
-    , d(new DBusMenuImporterPrivate)
+    , d(new MDBusMenuImporterPrivate)
 {
-    qCDebug(category) << "DBusMenuImporter init starts in thread" << thread();
-    std::cout << "DBusMenuImporter init starts in thread" << std::endl;
+    qCDebug(category) << "MDBusMenuImporter init starts in thread" << thread();
+    std::cout << "MDBusMenuImporter init starts in thread" << std::endl;
 
     DBusMenuTypes_register();
 
@@ -290,20 +290,20 @@ DBusMenuImporter::DBusMenuImporter(const QString &service, const QString &path, 
 
     d->m_pendingLayoutUpdateTimer = new QTimer(this);
     d->m_pendingLayoutUpdateTimer->setSingleShot(true);
-    connect(d->m_pendingLayoutUpdateTimer, &QTimer::timeout, this, &DBusMenuImporter::processPendingLayoutUpdates);
+    connect(d->m_pendingLayoutUpdateTimer, &QTimer::timeout, this, &MDBusMenuImporter::processPendingLayoutUpdates);
 
-    connect(d->m_interface, &ComCanonicalDbusmenuInterface::LayoutUpdated, this, &DBusMenuImporter::slotLayoutUpdated);
-    connect(d->m_interface, &ComCanonicalDbusmenuInterface::ItemActivationRequested, this, &DBusMenuImporter::slotItemActivationRequested);
+    connect(d->m_interface, &ComCanonicalDbusmenuInterface::LayoutUpdated, this, &MDBusMenuImporter::slotLayoutUpdated);
+    connect(d->m_interface, &ComCanonicalDbusmenuInterface::ItemActivationRequested, this, &MDBusMenuImporter::slotItemActivationRequested);
     connect(d->m_interface, &ComCanonicalDbusmenuInterface::ItemsPropertiesUpdated, this, [this](const DBusMenuItemList & updatedList, const DBusMenuItemKeysList & removedList) {
         d->slotItemsPropertiesUpdated(updatedList, removedList);
     });
 
     d->refresh(0);
 
-    qCDebug(category) << "DBusMenuImporter init ends in thread" << thread();
+    qCDebug(category) << "MDBusMenuImporter init ends in thread" << thread();
 }
 
-DBusMenuImporter::~DBusMenuImporter()
+MDBusMenuImporter::~MDBusMenuImporter()
 {
     // Do not use "delete d->m_menu": even if we are being deleted we should
     // leave enough time for the menu to finish what it was doing, for example
@@ -312,7 +312,7 @@ DBusMenuImporter::~DBusMenuImporter()
     delete d;
 }
 
-void DBusMenuImporter::slotLayoutUpdated(uint revision, int parentId)
+void MDBusMenuImporter::slotLayoutUpdated(uint revision, int parentId)
 {
     Q_UNUSED(revision)
 
@@ -327,7 +327,7 @@ void DBusMenuImporter::slotLayoutUpdated(uint revision, int parentId)
     }
 }
 
-void DBusMenuImporter::processPendingLayoutUpdates()
+void MDBusMenuImporter::processPendingLayoutUpdates()
 {
     QSet<int> ids = d->m_pendingLayoutUpdates;
     d->m_pendingLayoutUpdates.clear();
@@ -337,7 +337,7 @@ void DBusMenuImporter::processPendingLayoutUpdates()
     }
 }
 
-QMenu *DBusMenuImporter::menu() const
+QMenu *MDBusMenuImporter::menu() const
 {
     if (!d->m_menu) {
         d->m_menu = d->createMenu(nullptr);
@@ -346,7 +346,7 @@ QMenu *DBusMenuImporter::menu() const
     return d->m_menu;
 }
 
-void DBusMenuImporterPrivate::slotItemsPropertiesUpdated(const DBusMenuItemList &updatedList, const DBusMenuItemKeysList &removedList)
+void MDBusMenuImporterPrivate::slotItemsPropertiesUpdated(const DBusMenuItemList &updatedList, const DBusMenuItemKeysList &removedList)
 {
     Q_FOREACH (const DBusMenuItem &item, updatedList) {
         QAction *action = m_actionForId.value(item.id);
@@ -379,19 +379,19 @@ void DBusMenuImporterPrivate::slotItemsPropertiesUpdated(const DBusMenuItemList 
     }
 }
 
-QAction *DBusMenuImporter::actionForId(int id) const
+QAction *MDBusMenuImporter::actionForId(int id) const
 {
     return d->m_actionForId.value(id);
 }
 
-void DBusMenuImporter::slotItemActivationRequested(int id, uint /*timestamp*/)
+void MDBusMenuImporter::slotItemActivationRequested(int id, uint /*timestamp*/)
 {
     QAction *action = d->m_actionForId.value(id);
     DMRETURN_IF_FAIL(action);
     actionActivationRequested(action);
 }
 
-void DBusMenuImporter::slotGetLayoutFinished(QDBusPendingCallWatcher *watcher)
+void MDBusMenuImporter::slotGetLayoutFinished(QDBusPendingCallWatcher *watcher)
 {
     int parentId = watcher->property(DBUSMENU_PROPERTY_ID).toInt();
     watcher->deleteLater();
@@ -442,7 +442,7 @@ void DBusMenuImporter::slotGetLayoutFinished(QDBusPendingCallWatcher *watcher)
 
     //insert or update new actions into our menu
     for (const DBusMenuLayoutItem &dbusMenuItem : rootItem.children) {
-        DBusMenuImporterPrivate::ActionForId::Iterator it = d->m_actionForId.find(dbusMenuItem.id);
+        MDBusMenuImporterPrivate::ActionForId::Iterator it = d->m_actionForId.find(dbusMenuItem.id);
         QAction *action = nullptr;
 
         if (it == d->m_actionForId.end()) {
@@ -459,10 +459,10 @@ void DBusMenuImporter::slotGetLayoutFinished(QDBusPendingCallWatcher *watcher)
             });
 
             if (QMenu *menuAction = action->menu()) {
-                connect(menuAction, &QMenu::aboutToShow, this, &DBusMenuImporter::slotMenuAboutToShow, Qt::UniqueConnection);
+                connect(menuAction, &QMenu::aboutToShow, this, &MDBusMenuImporter::slotMenuAboutToShow, Qt::UniqueConnection);
             }
 
-            connect(menu, &QMenu::aboutToHide, this, &DBusMenuImporter::slotMenuAboutToHide, Qt::UniqueConnection);
+            connect(menu, &QMenu::aboutToHide, this, &MDBusMenuImporter::slotMenuAboutToHide, Qt::UniqueConnection);
 
             menu->addAction(action);
         } else {
@@ -481,19 +481,17 @@ void DBusMenuImporter::slotGetLayoutFinished(QDBusPendingCallWatcher *watcher)
     emit menuUpdated(menu);
 }
 
-void DBusMenuImporter::sendClickedEvent(int id)
+void MDBusMenuImporter::sendClickedEvent(int id)
 {
     d->sendEvent(id, QStringLiteral("clicked"));
 }
 
-void DBusMenuImporter::updateMenu()
+void MDBusMenuImporter::updateMenu()
 {
-    qCDebug(category) << "===================================";
-    qCDebug(category) << "DBusMenuImporter::updateMenu called";
-    updateMenu(DBusMenuImporter::menu());
+    updateMenu(MDBusMenuImporter::menu());
 }
 
-void DBusMenuImporter::updateMenu(QMenu *menu)
+void MDBusMenuImporter::updateMenu(QMenu *menu)
 {
     Q_ASSERT(menu);
 
@@ -506,13 +504,13 @@ void DBusMenuImporter::updateMenu(QMenu *menu)
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, this);
     watcher->setProperty(DBUSMENU_PROPERTY_ID, id);
     connect(watcher, &QDBusPendingCallWatcher::finished, this,
-            &DBusMenuImporter::slotAboutToShowDBusCallFinished);
+            &MDBusMenuImporter::slotAboutToShowDBusCallFinished);
 
     // Firefox deliberately ignores "aboutToShow" whereas Qt ignores" opened", so we'll just send both all the time...
     d->sendEvent(id, QStringLiteral("opened"));
 }
 
-void DBusMenuImporter::slotAboutToShowDBusCallFinished(QDBusPendingCallWatcher *watcher)
+void MDBusMenuImporter::slotAboutToShowDBusCallFinished(QDBusPendingCallWatcher *watcher)
 {
     int id = watcher->property(DBUSMENU_PROPERTY_ID).toInt();
     watcher->deleteLater();
@@ -543,7 +541,7 @@ void DBusMenuImporter::slotAboutToShowDBusCallFinished(QDBusPendingCallWatcher *
     }
 }
 
-void DBusMenuImporter::slotMenuAboutToHide()
+void MDBusMenuImporter::slotMenuAboutToHide()
 {
     QMenu *menu = qobject_cast<QMenu *>(sender());
     Q_ASSERT(menu);
@@ -555,7 +553,7 @@ void DBusMenuImporter::slotMenuAboutToHide()
     d->sendEvent(id, QStringLiteral("closed"));
 }
 
-void DBusMenuImporter::slotMenuAboutToShow()
+void MDBusMenuImporter::slotMenuAboutToShow()
 {
     QMenu *menu = qobject_cast<QMenu *>(sender());
     Q_ASSERT(menu);
@@ -574,12 +572,12 @@ void DBusMenuImporter::slotMenuAboutToShow()
     updateMenu(menu);
 }
 
-QMenu *DBusMenuImporter::createMenu(QWidget *parent)
+QMenu *MDBusMenuImporter::createMenu(QWidget *parent)
 {
     return new QMenu(parent);
 }
 
-QIcon DBusMenuImporter::iconForName(const QString &/*name*/)
+QIcon MDBusMenuImporter::iconForName(const QString &/*name*/)
 {
     return QIcon();
 }
