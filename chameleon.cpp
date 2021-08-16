@@ -39,6 +39,7 @@
 #include <QDebug>
 #include <QScreen>
 #include <QGuiApplication>
+#include <QX11Info>
 #include "debug.h"
 
 Q_DECLARE_METATYPE(QPainterPath)
@@ -334,6 +335,20 @@ void Chameleon::updateButtonsGeometry()
         } else {
             m_rightButtons->setPos(QPointF(size().width() - m_rightButtons->geometry().width() - hPadding - borderRight(), vPadding));
         }
+    }
+
+    // Menu
+    if (!m_menuButtons->buttons().isEmpty()) {
+        const int captionOffset = settings()->largeSpacing() * 8 + settings()->smallSpacing();
+        const QRect availableRect = centerRect().adjusted(
+                0,
+                0,
+                -captionOffset,
+                0
+                );
+        m_menuButtons->setPos(availableRect.topLeft());
+        m_menuButtons->setSpacing(0);
+        m_menuButtons->updateOverflow(availableRect);
     }
 
     updateTitleGeometry();
@@ -642,3 +657,91 @@ QColor Chameleon::getBackgroundColor() const
 
     return c->color(c->isActive() ? KDecoration2::ColorGroup::Active : KDecoration2::ColorGroup::Inactive, KDecoration2::ColorRole::TitleBar);
 }
+
+QRect Chameleon::titleBarRect() const {
+    return QRect(0, 0, size().width(), titleBarHeight());
+}
+
+QPoint Chameleon::windowPos() const {
+    const auto *decoratedClient = client().toStrongRef().data();
+    WId windowId = decoratedClient->windowId();
+
+    if (KWindowSystem::isPlatformX11()) {
+        //--- From: BreezeSizeGrip.cpp
+        /*
+        get root position matching position
+        need to use xcb because the embedding of the widget
+        breaks QT's mapToGlobal and other methods
+        */
+        auto connection( QX11Info::connection() );
+        xcb_get_geometry_cookie_t cookie( xcb_get_geometry( connection, windowId ) );
+        QScopedPointer<xcb_get_geometry_reply_t> reply( xcb_get_geometry_reply( connection, cookie, nullptr ) );
+        if (reply) {
+            // translate coordinates
+            xcb_translate_coordinates_cookie_t coordCookie( xcb_translate_coordinates(
+                    connection, windowId, reply.data()->root,
+                    -reply.data()->border_width,
+                    -reply.data()->border_width ) );
+
+            QScopedPointer< xcb_translate_coordinates_reply_t> coordReply( xcb_translate_coordinates_reply( connection, coordCookie, nullptr ) );
+
+            if (coordReply) {
+                return QPoint(coordReply.data()->dst_x, coordReply.data()->dst_y);
+            }
+        }
+
+    }
+
+    return QPoint(0, 0);
+}
+
+QColor Chameleon::titleBarBackgroundColor() const {
+    const auto *decoratedClient = client().toStrongRef().data();
+    const auto group = decoratedClient->isActive()
+            ? KDecoration2::ColorGroup::Active
+            : KDecoration2::ColorGroup::Inactive;
+    const qreal opacity = decoratedClient->isActive()
+            ? 0.8
+            : 0.8;
+    QColor color = decoratedClient->color(group, KDecoration2::ColorRole::TitleBar);
+    color.setAlphaF(opacity);
+    return color;
+}
+
+QColor Chameleon::titleBarForegroundColor() const {
+    const auto *decoratedClient = client().toStrongRef().data();
+    const auto group = decoratedClient->isActive()
+            ? KDecoration2::ColorGroup::Active
+            : KDecoration2::ColorGroup::Inactive;
+    return decoratedClient->color(group, KDecoration2::ColorRole::Foreground);
+}
+
+int Chameleon::getTextWidth(const QString text, bool showMnemonic) const {
+    const QFontMetrics fontMetrics(settings()->font());
+    const QRect textRect(titleBarRect());
+    int flags = showMnemonic ? Qt::TextShowMnemonic : Qt::TextHideMnemonic;
+    const QRect boundingRect = fontMetrics.boundingRect(textRect, flags, text);
+    return boundingRect.width();
+}
+
+int Chameleon::appMenuButtonHorzPadding() const {
+    return settings()->smallSpacing();
+}
+
+QRect Chameleon::centerRect() const {
+    const bool leftButtonsVisible = !m_leftButtons->buttons().isEmpty();
+    const int leftOffset = m_leftButtons->geometry().right()
+            + (leftButtonsVisible ? settings()->smallSpacing() : 0);
+
+    const bool rightButtonsVisible = !m_rightButtons->buttons().isEmpty();
+    const int rightOffset = m_rightButtons->geometry().width()
+            + (rightButtonsVisible ? settings()->smallSpacing() : 0);
+
+    return titleBarRect().adjusted(
+            leftOffset,
+            0,
+            -rightOffset,
+            0
+    );
+}
+

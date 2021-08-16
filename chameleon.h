@@ -73,6 +73,15 @@ public:
     QIcon unmaximizeIcon() const;
     QIcon closeIcon() const;
 
+    // 从 material-decoration 里拿来的
+    QRect centerRect() const;
+    QRect titleBarRect() const;
+    QPoint windowPos() const;
+    QColor titleBarBackgroundColor() const;
+    QColor titleBarForegroundColor() const;
+    int getTextWidth(const QString text, bool showMnemonic = false) const;
+    int appMenuButtonHorzPadding() const;
+
 signals:
     void noTitleBarChanged(bool noTitleBar);
     void effectInitialized(KWin::EffectWindow *effect);

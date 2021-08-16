@@ -32,9 +32,26 @@ public:
     // 所以我们只需要正确的插入 button 以及实现 button 绘制即可
     // void paint(QPainter *painter, const QRect &repaintArea) override;
 
+    int currentIndex() const;
+    void setCurrentIndex(int set);
+    bool overflowing() const;
+    void setOverflowing(bool set);
+    qreal opacity() const;
+    bool isMenuOpen() const;
+
+signals:
+    void menuUpdated();
+    void overflowingChanged();
+
+public slots:
+    void updateOverflow(QRectF availableRect);
+    void trigger(int index);
+
 private slots:
     // 负责在菜单变化后，获取菜单内容
     void updateMenu();
+
+    void onMenuAboutToHide();
 
 private:
     // 以下是一些辅助函数
@@ -42,8 +59,20 @@ private:
     // 当前 AppMenuButtonGroup 对应的窗口 id
     WId windowId() const;
 
+    // 清除当前所有的 button 并释放内存
+    void resetButtons();
+
     // 负责监听给定窗口的菜单变化以及获取菜单
-    AppMenuModel *appMenuModel;
+    AppMenuModel *m_appMenuModel;
+
+    int m_currentIndex;
+    int m_overflowIndex;
+    bool m_overflowing;
+    bool m_hovered;
+    bool m_showing;
+    bool m_alwaysShow;
+    qreal m_opacity;
+    QPointer<QMenu> m_currentMenu;
 };
 
 
