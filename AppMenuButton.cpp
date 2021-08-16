@@ -76,13 +76,7 @@ QColor AppMenuButton::foregroundColor() const
         && buttonGroup->currentIndex() != m_buttonIndex
     ) {
         const auto *deco = qobject_cast<Chameleon *>(decoration());
-        if (!deco) {
-            return {};
-        }
-        return KColorUtils::mix(
-            deco->titleBarBackgroundColor(),
-            deco->titleBarForegroundColor(),
-            0.8);
+        return deco->getTextColor();
     } else {
         return Button::foregroundColor();
     }

@@ -77,6 +77,8 @@ signals:
 private:
     QMargins *m_padding;
     bool m_isGtkButton;
+
+    bool m_isTriggered;
 };
 
 } // namespace Material

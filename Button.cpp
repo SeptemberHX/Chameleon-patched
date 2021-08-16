@@ -148,7 +148,6 @@ void Button::paint(QPainter *painter, const QRect &repaintRegion)
     setPenWidth(painter, gridUnit, 1);
     painter->setBrush(Qt::NoBrush);
 
-
     // Icon
     switch (type()) {
     case KDecoration2::DecorationButtonType::ApplicationMenu:

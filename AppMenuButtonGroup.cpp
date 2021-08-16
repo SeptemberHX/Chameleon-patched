@@ -206,6 +206,7 @@ void AppMenuButtonGroup::trigger(int buttonIndex) {
 
         setCurrentIndex(buttonIndex);
         button->setChecked(true);
+        button->update();
 
         // FIXME TODO connect only once
         connect(actionMenu, &QMenu::aboutToHide, this, &AppMenuButtonGroup::onMenuAboutToHide, Qt::UniqueConnection);
