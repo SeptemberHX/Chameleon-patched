@@ -36,21 +36,21 @@ public:
     void setCurrentIndex(int set);
     bool overflowing() const;
     void setOverflowing(bool set);
-    qreal opacity() const;
     bool isMenuOpen() const;
 
 signals:
     void menuUpdated();
     void overflowingChanged();
+    void currentIndexChanged();
 
 public slots:
     void updateOverflow(QRectF availableRect);
     void trigger(int index);
 
-private slots:
     // 负责在菜单变化后，获取菜单内容
     void updateMenu();
 
+private slots:
     void onMenuAboutToHide();
 
 private:
@@ -71,7 +71,6 @@ private:
     bool m_hovered;
     bool m_showing;
     bool m_alwaysShow;
-    qreal m_opacity;
     QPointer<QMenu> m_currentMenu;
 };
 

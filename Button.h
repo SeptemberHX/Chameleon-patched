@@ -40,11 +40,10 @@ public:
     Button(KDecoration2::DecorationButtonType type, Chameleon *decoration, QObject *parent = nullptr);
     ~Button() override;
 
-    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
-    Q_PROPERTY(qreal transitionValue READ transitionValue WRITE setTransitionValue NOTIFY transitionValueChanged)
     Q_PROPERTY(QMargins* padding READ padding NOTIFY paddingChanged)
 
     // Passed to DecorationButtonGroup in Decoration
+    // 但是我们用不到
     static KDecoration2::DecorationButton *create(KDecoration2::DecorationButtonType type, KDecoration2::Decoration *decoration, QObject *parent = nullptr);
 
     // This is called by:
@@ -62,30 +61,20 @@ public:
     virtual qreal iconLineWidth(const qreal gridUnit) const;
     void setPenWidth(QPainter *painter, const qreal gridUnit, const qreal scale);
 
+    // 按钮的背景色
     virtual QColor backgroundColor() const;
+
+    // 按钮的文字颜色
     virtual QColor foregroundColor() const;
 
     QRectF contentArea() const;
 
-    qreal opacity() const;
-    void setOpacity(qreal value);
-
-    qreal transitionValue() const;
-    void setTransitionValue(qreal value);
-
     QMargins* padding();
 
-private Q_SLOTS:
-    void updateAnimationState(bool hovered);
-
 signals:
-    void opacityChanged();
-    void transitionValueChanged(qreal);
     void paddingChanged();
 
 private:
-    qreal m_opacity;
-    qreal m_transitionValue;
     QMargins *m_padding;
     bool m_isGtkButton;
 };

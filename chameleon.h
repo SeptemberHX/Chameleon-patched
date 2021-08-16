@@ -82,6 +82,8 @@ public:
     int getTextWidth(const QString text, bool showMnemonic = false) const;
     int appMenuButtonHorzPadding() const;
 
+    QColor getTextColor() const;
+    QColor getBackgroundColor() const;
 signals:
     void noTitleBarChanged(bool noTitleBar);
     void effectInitialized(KWin::EffectWindow *effect);
@@ -115,9 +117,6 @@ private:
 
     bool windowNeedRadius() const;
     bool windowNeedBorder() const;
-
-    QColor getTextColor() const;
-    QColor getBackgroundColor() const;
 
     bool m_initialized = false;
     qint8 m_noTitleBar = -1;

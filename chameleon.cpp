@@ -126,8 +126,7 @@ void Chameleon::paint(QPainter *painter, const QRect &repaintArea)
         // draw all buttons
         m_leftButtons->paint(painter, repaintArea);
         m_rightButtons->paint(painter, repaintArea);
-
-//        m_menuButtons->paint(painter, repaintArea);
+        m_menuButtons->paint(painter, repaintArea);
     }
 
     if (windowNeedBorder()) {
@@ -284,9 +283,9 @@ void Chameleon::initButtons()
     m_rightButtons = new KDecoration2::DecorationButtonGroup(KDecoration2::DecorationButtonGroup::Position::Right, this, &ChameleonButton::create);
 
     m_menuButtons = new AppMenuButtonGroup(this);
-    //    connect(m_menuButtons, &AppMenuButtonGroup::menuUpdated,
-    //            this, &Chameleon::updateButtonsGeometry);
-    //    m_menuButtons->updateAppMenuModel();
+//    connect(m_menuButtons, &AppMenuButtonGroup::menuUpdated,
+//            this, &Chameleon::updateButtonsGeometry);
+//    m_menuButtons->updateMenu();
 }
 
 void Chameleon::updateButtonsGeometry()

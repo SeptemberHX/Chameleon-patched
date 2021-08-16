@@ -44,11 +44,6 @@ AppMenuButton::AppMenuButton(Chameleon *decoration, const int buttonIndex, QObje
 
     connect(this, &AppMenuButton::clicked,
         this, &AppMenuButton::trigger);
-
-    const auto *buttonGroup = qobject_cast<AppMenuButtonGroup *>(parent);
-    if (buttonGroup) {
-        setOpacity(buttonGroup->opacity());
-    }
 }
 
 AppMenuButton::~AppMenuButton()

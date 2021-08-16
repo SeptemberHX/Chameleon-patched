@@ -42,32 +42,14 @@ namespace Material
 
 Button::Button(KDecoration2::DecorationButtonType type, Chameleon *decoration, QObject *parent)
     : DecorationButton(type, decoration, parent)
-    , m_opacity(1)
-    , m_transitionValue(0)
     , m_padding(new QMargins())
     , m_isGtkButton(false)
 {
-    connect(this, &Button::hoveredChanged, this,
-        [this](bool hovered) {
-            updateAnimationState(hovered);
-            update();
-        });
-
     if (QCoreApplication::applicationName() == QStringLiteral("kded5")) {
         // See: https://github.com/Zren/material-decoration/issues/22
         // kde-gtk-config has a kded5 module which renders the buttons to svgs for gtk.
         m_isGtkButton = true;
     }
-
-    // Animation based on SierraBreezeEnhanced
-    // https://github.com/kupiqu/SierraBreezeEnhanced/blob/master/breezebutton.cpp#L45
-    connect(this, &Button::transitionValueChanged, this, [this]() {
-        update();
-    });
-
-    connect(this, &Button::opacityChanged, this, [this]() {
-        update();
-    });
 
     setHeight(decoration->titleBarHeight());
 
@@ -152,15 +134,15 @@ void Button::paint(QPainter *painter, const QRect &repaintRegion)
 
     painter->save();
 
-    painter->setRenderHints(QPainter::Antialiasing, false);
+    painter->setRenderHints(QPainter::HighQualityAntialiasing, true);
 
     // Opacity
-    painter->setOpacity(m_opacity);
+//    painter->setOpacity(m_opacity);
 
     // Background.
     painter->setPen(Qt::NoPen);
     painter->setBrush(backgroundColor());
-    painter->drawRect(buttonRect);
+    painter->drawRoundedRect(buttonRect, 8, 8);
 
     // Foreground.
     setPenWidth(painter, gridUnit, 1);
@@ -176,7 +158,6 @@ void Button::paint(QPainter *painter, const QRect &repaintRegion)
         paintIcon(painter, iconRect, gridUnit);
         break;
     }
-
     painter->restore();
 }
 
@@ -219,113 +200,30 @@ void Button::setPenWidth(QPainter *painter, const qreal gridUnit, const qreal sc
 
 QColor Button::backgroundColor() const
 {
-    const auto *deco = qobject_cast<Chameleon *>(decoration());
-    if (!deco) {
-        return {};
-    }
-
-    //--- CloseButton
-    if (type() == KDecoration2::DecorationButtonType::Close) {
-        auto *decoratedClient = deco->client().toStrongRef().data();
-        const QColor hoveredColor = decoratedClient->color(
-            KDecoration2::ColorGroup::Warning,
-            KDecoration2::ColorRole::Foreground
-        );
-        QColor normalColor = QColor(hoveredColor);
-        normalColor.setAlphaF(0);
-
-        if (isPressed()) {
-            const QColor pressedColor = decoratedClient->color(
-                KDecoration2::ColorGroup::Warning,
-                KDecoration2::ColorRole::Foreground
-            ).lighter();
-            return KColorUtils::mix(normalColor, pressedColor, m_transitionValue);
-        }
-
-        if (isHovered()) {
-            return KColorUtils::mix(normalColor, hoveredColor, m_transitionValue);
-        }
-    }
-
-    //--- Checked
-    if (isChecked() && type() != KDecoration2::DecorationButtonType::Maximize) {
-        const QColor normalColor = deco->titleBarForegroundColor();
-
-        if (isPressed()) {
-            const QColor pressedColor = KColorUtils::mix(
-                deco->titleBarBackgroundColor(),
-                deco->titleBarForegroundColor(),
-                0.7);
-            return KColorUtils::mix(normalColor, pressedColor, m_transitionValue);
-        }
-        if (isHovered()) {
-            const QColor hoveredColor = KColorUtils::mix(
-                deco->titleBarBackgroundColor(),
-                deco->titleBarForegroundColor(),
-                0.8);
-            return KColorUtils::mix(normalColor, hoveredColor, m_transitionValue);
-        }
-        return normalColor;
-    }
-
     //--- Normal
-    const QColor hoveredColor = KColorUtils::mix(
-        deco->titleBarBackgroundColor(),
-        deco->titleBarForegroundColor(),
-        0.2);
+    auto *c = qobject_cast<Chameleon*>(decoration().data());
+
+    const QColor hoveredColor("#0081FF");
     QColor normalColor = QColor(hoveredColor);
     normalColor.setAlphaF(0);
 
-    if (isPressed()) {
-        const QColor pressedColor = KColorUtils::mix(
-            deco->titleBarBackgroundColor(),
-            deco->titleBarForegroundColor(),
-            0.3);
-        return KColorUtils::mix(normalColor, pressedColor, m_transitionValue);
+
+    if (isChecked() || isPressed() || isHovered()) {
+        return hoveredColor;
     }
-    if (isHovered()) {
-        return KColorUtils::mix(normalColor, hoveredColor, m_transitionValue);
-    }
-    return normalColor;
+
+    return c->getBackgroundColor();
 }
 
 QColor Button::foregroundColor() const
 {
-    const auto *deco = qobject_cast<Chameleon *>(decoration());
-    if (!deco) {
-        return {};
-    }
-
-    //--- Checked
-    if (isChecked() && type() != KDecoration2::DecorationButtonType::Maximize) {
-        QColor activeColor = KColorUtils::mix(
-            deco->titleBarBackgroundColor(),
-            deco->titleBarForegroundColor(),
-            0.2);
-
-        if (isPressed() || isHovered()) {
-            return KColorUtils::mix(
-                activeColor,
-                deco->titleBarBackgroundColor(),
-                m_transitionValue);
-        }
-        return activeColor;
-    }
-
     //--- Normal
-    QColor normalColor = KColorUtils::mix(
-        deco->titleBarBackgroundColor(),
-        deco->titleBarForegroundColor(),
-        0.8);
-
-    if (isPressed() || isHovered()) {
-        return KColorUtils::mix(
-            normalColor,
-            deco->titleBarForegroundColor(),
-            m_transitionValue);
+    auto *c = qobject_cast<Chameleon*>(decoration().data());
+    if (isChecked() || isPressed() || isHovered()) {
+        return Qt::white;
     }
 
-    return normalColor;
+    return c->getTextColor();
 }
 
 
@@ -339,40 +237,9 @@ QRectF Button::contentArea() const
     );
 }
 
-qreal Button::opacity() const
-{
-    return m_opacity;
-}
-
-void Button::setOpacity(qreal value)
-{
-    if (m_opacity != value) {
-        m_opacity = value;
-        emit opacityChanged();
-    }
-}
-
-qreal Button::transitionValue() const
-{
-    return m_transitionValue;
-}
-
-void Button::setTransitionValue(qreal value)
-{
-    if (m_transitionValue != value) {
-        m_transitionValue = value;
-        emit transitionValueChanged(value);
-    }
-}
-
 QMargins* Button::padding()
 {
     return m_padding;
-}
-
-void Button::updateAnimationState(bool hovered)
-{
-    setTransitionValue(1);
 }
 
 

@@ -16,7 +16,12 @@ using Material::MenuOverflowButton;
 
 AppMenuButtonGroup::AppMenuButtonGroup(Decoration *decoration)
     : DecorationButtonGroup(decoration)
-    , m_opacity(0.8)
+    , m_appMenuModel(nullptr)
+    , m_currentIndex(-1)
+    , m_overflowIndex(-1)
+    , m_hovered(false)
+    , m_showing(true)
+    , m_alwaysShow(true)
 {
     this->m_appMenuModel = new AppMenuModel(this);
     connect(this->m_appMenuModel, &AppMenuModel::modelNeedsUpdate, this, &AppMenuButtonGroup::updateMenu);
@@ -51,7 +56,7 @@ void AppMenuButtonGroup::updateMenu() {
     // Populate
     for (int row = 0; row < m_appMenuModel->rowCount(); row++) {
         const QModelIndex index = m_appMenuModel->index(row, 0);
-        const QString itemLabel = m_appMenuModel->data(index, AppMenuModel::MenuRole).toString();
+        QString itemLabel = m_appMenuModel->data(index, AppMenuModel::MenuRole).toString();
 
         // https://github.com/psifidotos/applet-window-appmenu/blob/908e60831d7d68ee56a56f9c24017a71822fc02d/lib/appmenuapplet.cpp#L167
         const QVariant data = m_appMenuModel->data(index, AppMenuModel::ActionRole);
@@ -60,7 +65,12 @@ void AppMenuButtonGroup::updateMenu() {
         qCDebug(category) << this->windowId() << itemLabel;
 
         TextButton *b = new TextButton(deco, row, this);
-        b->setText(itemLabel);
+        QString menuStr = itemLabel.remove('&');
+        int cIndex = menuStr.lastIndexOf('(');
+        if (cIndex > 0) {
+            menuStr = menuStr.mid(0, cIndex);
+        }
+        b->setText(QString("  %1  ").arg(menuStr));
         b->setAction(itemAction);
 
         // Skip items with empty labels (The first item in a Gtk app)
@@ -71,10 +81,10 @@ void AppMenuButtonGroup::updateMenu() {
 
         addButton(QPointer<KDecoration2::DecorationButton>(b));
     }
-//    m_overflowIndex = m_appMenuModel->rowCount();
+    m_overflowIndex = m_appMenuModel->rowCount();
 //    addButton(new MenuOverflowButton(deco, m_overflowIndex, this));
 
-//    emit menuUpdated();
+    emit menuUpdated();
     qCDebug(category) << this->windowId() << "AppMenuButtonGroup updateMenu ends";
 }
 
@@ -210,7 +220,7 @@ void AppMenuButtonGroup::setCurrentIndex(int set) {
     if (m_currentIndex != set) {
         m_currentIndex = set;
         // qCDebug(category) << this << "setCurrentIndex" << m_currentIndex;
-//        emit currentIndexChanged();
+        emit currentIndexChanged();
     }
 }
 
@@ -246,10 +256,6 @@ void AppMenuButtonGroup::setOverflowing(bool set) {
         // qCDebug(category) << this << "setOverflowing" << m_overflowing;
         emit overflowingChanged();
     }
-}
-
-qreal AppMenuButtonGroup::opacity() const {
-    return m_opacity;
 }
 
 bool AppMenuButtonGroup::isMenuOpen() const {
