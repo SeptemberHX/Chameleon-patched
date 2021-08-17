@@ -39,8 +39,8 @@ WId AppMenuButtonGroup::windowId() const {
 }
 
 void AppMenuButtonGroup::updateMenu() {
-    qCDebug(category) << this->windowId() << "AppMenuButtonGroup updateMenu starts with"
-                      << this->m_appMenuModel->rowCount() << "menu items";
+//    qCDebug(category) << this->windowId() << "AppMenuButtonGroup updateMenu starts with"
+//                      << this->m_appMenuModel->rowCount() << "menu items";
     auto *deco = qobject_cast<Chameleon *>(decoration());
     if (!deco) {
         qDebug() << "Decoration::updateAppMenuModel exits due to nullptr of deco";
@@ -66,7 +66,7 @@ void AppMenuButtonGroup::updateMenu() {
         const QVariant data = m_appMenuModel->data(index, AppMenuModel::ActionRole);
         QAction *itemAction = (QAction *)data.value<void *>();
 
-        qCDebug(category) << this->windowId() << itemLabel;
+//        qCDebug(category) << this->windowId() << itemLabel;
 
         TextButton *b = new TextButton(deco, row, this);
         QString menuStr = itemLabel.remove('&');
@@ -94,7 +94,7 @@ void AppMenuButtonGroup::updateMenu() {
     addButton(new MenuOverflowButton(deco, m_overflowIndex, this));
 
     emit menuUpdated();
-    qCDebug(category) << this->windowId() << "AppMenuButtonGroup updateMenu ends";
+//    qCDebug(category) << this->windowId() << "AppMenuButtonGroup updateMenu ends";
 }
 
 void AppMenuButtonGroup::resetButtons() {
@@ -168,6 +168,7 @@ void AppMenuButtonGroup::trigger(int buttonIndex) {
         actionMenu->winId();//create window handle
         actionMenu->installEventFilter(this);
         actionMenu->popup(rootPosition);
+        actionMenu->hasFocus();
 
         QMenu *oldMenu = m_currentMenu;
         m_currentMenu = actionMenu;
@@ -298,6 +299,7 @@ bool AppMenuButtonGroup::eventFilter(QObject *watched, QEvent *event) {
 
         KDecoration2::DecorationButton* item = buttonAt(decoPos.x(), decoPos.y());
         if (!item) {
+//            qCDebug(category) << "No item at current position, return";
             return false;
         }
 
@@ -307,7 +309,9 @@ bool AppMenuButtonGroup::eventFilter(QObject *watched, QEvent *event) {
             && appMenuButton->isVisible()
             && appMenuButton->isEnabled()
             ) {
+//                qCDebug(category) << "current on" << appMenuButton->buttonIndex() << ", trigger it now";
                 trigger(appMenuButton->buttonIndex());
+                return true;
             }
             return false;
         }
