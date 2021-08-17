@@ -4,7 +4,6 @@
 
 #include "AppMenuButton.h"
 #include "AppMenuButtonGroup.h"
-#include "debug.h"
 #include "TextButton.h"
 #include "MenuOverflowButton.h"
 
@@ -25,11 +24,11 @@ AppMenuButtonGroup::AppMenuButtonGroup(Decoration *decoration)
     , m_hovered(false)
     , m_showing(true)
     , m_alwaysShow(true)
+    , m_proxyStyle(new MyProxyStyle)
 {
     this->m_appMenuModel = new AppMenuModel(this);
     connect(this->m_appMenuModel, &AppMenuModel::modelNeedsUpdate, this, &AppMenuButtonGroup::updateMenu);
     this->m_appMenuModel->setWinId(this->windowId());
-
 
     qCDebug(category) << this->windowId() << "AppMenuButtonGroup init ends";
 }
@@ -159,6 +158,10 @@ void AppMenuButtonGroup::trigger(int buttonIndex) {
         QPoint rootPosition(position);
         rootPosition += deco->windowPos();
         // qCDebug(category) << "    windowPos" << windowPos;
+
+        // 下面两行负责将菜单的图标按照系统的缩放倍数放大
+        this->m_proxyStyle->setPixelRatio(deco->getPixelRatio());
+        actionMenu->setStyle(this->m_proxyStyle);
 
         actionMenu->adjustSize();
         actionMenu->winId();//create window handle

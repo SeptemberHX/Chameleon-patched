@@ -7,11 +7,32 @@
 
 #include <KDecoration2/DecorationButtonGroup>
 #include <KDecoration2/Decoration>
+#include <QProxyStyle>
 
 #include "appmenu/appmenumodel.h"
+#include "debug.h"
 
 using KDecoration2::DecorationButtonGroup;
 using KDecoration2::Decoration;
+
+
+class MyProxyStyle : public QProxyStyle {
+public:
+    void setPixelRatio(qreal pixelRatio) {
+        MyProxyStyle::pixelRatio = pixelRatio;
+    }
+
+    int pixelMetric(PixelMetric metric, const QStyleOption *option, const QWidget *widget) const override {
+        qCDebug(category) << metric;
+        if (metric == QStyle::PM_ButtonIconSize) {
+            return QProxyStyle::pixelMetric(metric, option, widget) * pixelRatio;
+        }
+        return QProxyStyle::pixelMetric(metric, option, widget);
+    }
+
+private:
+    qreal pixelRatio;
+};
 
 /*
  * 根据 KDE 官方文档 https://api.kde.org/kdecoration/html/classKDecoration2_1_1DecorationButtonGroup.html，
@@ -77,6 +98,8 @@ private:
     bool m_showing;
     bool m_alwaysShow;
     QPointer<QMenu> m_currentMenu;
+
+    MyProxyStyle *m_proxyStyle;
 };
 
 
