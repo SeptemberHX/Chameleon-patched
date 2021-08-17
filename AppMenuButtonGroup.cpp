@@ -109,9 +109,9 @@ void AppMenuButtonGroup::resetButtons() {
 }
 
 void AppMenuButtonGroup::trigger(int buttonIndex) {
-    if (buttonIndex == m_currentIndex) return;
+//    if (buttonIndex == m_currentIndex) return;
 
-    // qCDebug(category) << "AppMenuButtonGroup::trigger" << buttonIndex;
+    qCDebug(category) << "AppMenuButtonGroup::trigger" << buttonIndex;
     KDecoration2::DecorationButton* button = buttons().value(buttonIndex);
 
     // https://github.com/psifidotos/applet-window-appmenu/blob/908e60831d7d68ee56a56f9c24017a71822fc02d/lib/appmenuapplet.cpp#L167
@@ -152,10 +152,6 @@ void AppMenuButtonGroup::trigger(int buttonIndex) {
     }
 
     const auto *deco = qobject_cast<Chameleon *>(decoration());
-//     if (actionMenu && deco) {
-//         auto *decoratedClient = deco->client().toStrongRef().data();
-//         actionMenu->setPalette(decoratedClient->palette());
-//     }
 
     if (actionMenu && deco) {
         QRectF buttonRect = button->geometry();
@@ -191,6 +187,7 @@ void AppMenuButtonGroup::trigger(int buttonIndex) {
 }
 
 void AppMenuButtonGroup::onMenuAboutToHide() {
+    qCDebug(category) << "onMenuAboutToHide";
     if (0 <= m_currentIndex && m_currentIndex < buttons().length()) {
         buttons().value(m_currentIndex)->setChecked(false);
     }
@@ -252,10 +249,6 @@ bool AppMenuButtonGroup::eventFilter(QObject *watched, QEvent *event) {
 
     if (!menu) {
         return false;
-    }
-
-    if (event->type() == QMouseEvent::KeyPress) {
-
     }
 
     if (event->type() == QEvent::KeyPress) {
