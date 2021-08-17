@@ -9,8 +9,10 @@ Inspired by [material-decoration](https://github.com/Zren/material-decoration) a
 How to use:
 1. install [dde-globalmenu-service](https://github.com/SeptemberHX/dde-globalmenu-service) and set it with autostart(right click on the launcher)
 2. `sudo apt install libkf5config-bin libqt5quickparticles5 libqt5quickshapes5` (please use `ldd` to check the dependencies)
-3. download the release zip file in release page(only for deepinv20. other distributions need to compile from source)
-4. copy the libdde-chameleon.so to `/usr/lib/x86_64-linux-gnu/qt5/plugins/org.kde.kdecoration2`(you should backup the one provided by the system)
+3. modify `~/.gtkrc-2.0`, add `gtk-modules=appmenu-gtk-module`
+4. modify `～/.config/gtk-3.0/settings.ini`，add `gtk-modules=appmenu-gtk-module` under [Settings] 
+4. download the release zip file in release page(only for deepinv20. other distributions need to compile from source)
+5. copy the libdde-chameleon.so to `/usr/lib/x86_64-linux-gnu/qt5/plugins/org.kde.kdecoration2`(you should backup the one provided by the system)
 
 How to restore if something wrong happens:
 1. press ctrl+alt+F2 and login your account
