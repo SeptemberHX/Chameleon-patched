@@ -83,6 +83,11 @@ void AppMenuButtonGroup::updateMenu() {
             b->setVisible(false);
         }
 
+        // 修复菜单刷新时的选中高亮消失问题
+        if (m_currentIndex == row) {
+            b->setChecked(true);
+        }
+
         addButton(QPointer<KDecoration2::DecorationButton>(b));
     }
     m_overflowIndex = m_appMenuModel->rowCount();
@@ -261,7 +266,15 @@ bool AppMenuButtonGroup::eventFilter(QObject *watched, QEvent *event) {
                 return false;
             }
 
+            // 修复越界导致的显示异常
             int desiredIndex = m_currentIndex + 1;
+            while (desiredIndex < buttons().size() && !buttons()[desiredIndex]->isVisible()) {
+                ++desiredIndex;
+            }
+            if (desiredIndex == buttons().size()) {
+                desiredIndex = m_currentIndex;
+            }
+
             trigger(desiredIndex);
             return true;
         }

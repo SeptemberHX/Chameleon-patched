@@ -283,8 +283,7 @@ void Chameleon::initButtons()
     m_rightButtons = new KDecoration2::DecorationButtonGroup(KDecoration2::DecorationButtonGroup::Position::Right, this, &ChameleonButton::create);
 
     m_menuButtons = new AppMenuButtonGroup(this);
-    connect(m_menuButtons, &AppMenuButtonGroup::menuUpdated,
-            this, &Chameleon::updateButtonsGeometry);
+    connect(m_menuButtons, &AppMenuButtonGroup::menuUpdated,this, &Chameleon::updateButtonsGeometry);
 //    m_menuButtons->updateMenu();
 }
 
