@@ -101,10 +101,11 @@ Button::Button(QObject *parent, const QVariantList &args)
 void Button::paint(QPainter *painter, const QRect &repaintRegion)
 {
     Q_UNUSED(repaintRegion)
+    auto deco = qobject_cast<Chameleon*>(decoration());
 
     // Buttons are coded assuming 24 units in size.
     QRectF buttonRect = geometry();
-    buttonRect.setHeight(qMin(30.0, geometry().height()));
+    buttonRect.setHeight(qMin(30.0 * deco->getPixelRatio(), geometry().height()));
     buttonRect.moveCenter(geometry().center());
 
     const QRectF contentRect = contentArea();

@@ -104,6 +104,8 @@ void AppMenuButtonGroup::resetButtons() {
 }
 
 void AppMenuButtonGroup::trigger(int buttonIndex) {
+    if (buttonIndex == m_currentIndex) return;
+
     // qCDebug(category) << "AppMenuButtonGroup::trigger" << buttonIndex;
     KDecoration2::DecorationButton* button = buttons().value(buttonIndex);
 
@@ -145,10 +147,10 @@ void AppMenuButtonGroup::trigger(int buttonIndex) {
     }
 
     const auto *deco = qobject_cast<Chameleon *>(decoration());
-    // if (actionMenu && deco) {
-    //     auto *decoratedClient = deco->client().toStrongRef().data();
-    //     actionMenu->setPalette(decoratedClient->palette());
-    // }
+//     if (actionMenu && deco) {
+//         auto *decoratedClient = deco->client().toStrongRef().data();
+//         actionMenu->setPalette(decoratedClient->palette());
+//     }
 
     if (actionMenu && deco) {
         QRectF buttonRect = button->geometry();
@@ -157,36 +159,10 @@ void AppMenuButtonGroup::trigger(int buttonIndex) {
         rootPosition += deco->windowPos();
         // qCDebug(category) << "    windowPos" << windowPos;
 
-        // auto connection( QX11Info::connection() );
-
-        // button release event
-        // xcb_button_release_event_t releaseEvent;
-        // memset(&releaseEvent, 0, sizeof(releaseEvent));
-
-        // releaseEvent.response_type = XCB_BUTTON_RELEASE;
-        // releaseEvent.event =  windowId;
-        // releaseEvent.child = XCB_WINDOW_NONE;
-        // releaseEvent.root = QX11Info::appRootWindow();
-        // releaseEvent.event_x = position.x();
-        // releaseEvent.event_y = position.y();
-        // releaseEvent.root_x = rootPosition.x();
-        // releaseEvent.root_y = rootPosition.y();
-        // releaseEvent.detail = XCB_BUTTON_INDEX_1;
-        // releaseEvent.state = XCB_BUTTON_MASK_1;
-        // releaseEvent.time = XCB_CURRENT_TIME;
-        // releaseEvent.same_screen = true;
-        // xcb_send_event( connection, false, windowId, XCB_EVENT_MASK_BUTTON_RELEASE, reinterpret_cast<const char*>(&releaseEvent));
-
-        // xcb_ungrab_pointer( connection, XCB_TIME_CURRENT_TIME );
-        //---
-
         actionMenu->adjustSize();
         actionMenu->winId();//create window handle
         actionMenu->installEventFilter(this);
-
-        if (!KWindowSystem::isPlatformWayland()) {
-            actionMenu->popup(rootPosition);
-        }
+        actionMenu->popup(rootPosition);
 
         QMenu *oldMenu = m_currentMenu;
         m_currentMenu = actionMenu;
@@ -200,13 +176,8 @@ void AppMenuButtonGroup::trigger(int buttonIndex) {
             buttons().value(m_currentIndex)->setChecked(false);
         }
 
-        if (KWindowSystem::isPlatformWayland()) {
-            actionMenu->popup(rootPosition);
-        }
-
         setCurrentIndex(buttonIndex);
         button->setChecked(true);
-        button->update();
 
         // FIXME TODO connect only once
         connect(actionMenu, &QMenu::aboutToHide, this, &AppMenuButtonGroup::onMenuAboutToHide, Qt::UniqueConnection);
@@ -236,10 +207,10 @@ void AppMenuButtonGroup::updateOverflow(QRectF availableRect) {
     qCDebug(category) << "updateOverflow" << availableRect;
     bool showOverflow = false;
     for (KDecoration2::DecorationButton *button : buttons()) {
-        qCDebug(category) << "    " << button->geometry() << button;
+//        qCDebug(category) << "    " << button->geometry() << button;
         if (qobject_cast<MenuOverflowButton *>(button)) {
             button->setVisible(showOverflow);
-            qCDebug(category) << "    showOverflow" << showOverflow;
+//            qCDebug(category) << "    showOverflow" << showOverflow;
         } else if (qobject_cast<TextButton *>(button)) {
             if (button->isEnabled()) {
                 if (availableRect.contains(button->geometry())) {
@@ -303,10 +274,10 @@ bool AppMenuButtonGroup::eventFilter(QObject *watched, QEvent *event) {
         QPoint decoPos(e->globalPos());
         decoPos -= deco->windowPos();
         decoPos.ry() += deco->titleBarHeight();
-         qCDebug(category) << "MouseMove";
-         qCDebug(category) << "       globalPos" << e->globalPos();
-         qCDebug(category) << "       windowPos" << deco->windowPos();
-         qCDebug(category) << "  titleBarHeight" << deco->titleBarHeight();
+//         qCDebug(category) << "MouseMove";
+//         qCDebug(category) << "       globalPos" << e->globalPos();
+//         qCDebug(category) << "       windowPos" << deco->windowPos();
+//         qCDebug(category) << "  titleBarHeight" << deco->titleBarHeight();
 
         KDecoration2::DecorationButton* item = buttonAt(decoPos.x(), decoPos.y());
         if (!item) {

@@ -754,3 +754,7 @@ QRect Chameleon::centerRect() const {
     );
 }
 
+qreal Chameleon::getPixelRatio() const {
+    return m_theme->windowPixelRatio();
+}
+

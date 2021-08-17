@@ -84,6 +84,8 @@ public:
 
     QColor getTextColor() const;
     QColor getBackgroundColor() const;
+
+    qreal getPixelRatio() const;
 signals:
     void noTitleBarChanged(bool noTitleBar);
     void effectInitialized(KWin::EffectWindow *effect);
