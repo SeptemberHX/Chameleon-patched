@@ -37,9 +37,9 @@ public:
         button->setVisible(decoratedClient->hasApplicationMenu());
     }
     static void paintIcon(Button *button, QPainter *painter, const QRectF &iconRect, const qreal gridUnit) {
-        button->setPenWidth(painter, gridUnit, 1.75);
+        button->setPenWidth(painter, gridUnit, 1);
 
-        int spacing = qRound(gridUnit * 4);
+        int spacing = qRound(gridUnit * 3);
         for (int i = -1; i <= 1; ++i) {
             const QPointF left { iconRect.left(), iconRect.center().y() + i * spacing };
             const QPointF right { iconRect.right(), iconRect.center().y() + i * spacing };

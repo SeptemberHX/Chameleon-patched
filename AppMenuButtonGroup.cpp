@@ -253,6 +253,10 @@ bool AppMenuButtonGroup::eventFilter(QObject *watched, QEvent *event) {
         return false;
     }
 
+    if (event->type() == QMouseEvent::KeyPress) {
+
+    }
+
     if (event->type() == QEvent::KeyPress) {
         auto *e = static_cast<QKeyEvent *>(event);
 
