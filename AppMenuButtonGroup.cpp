@@ -132,16 +132,12 @@ void AppMenuButtonGroup::trigger(int buttonIndex) {
 
         QAction *action = nullptr;
         for (int i = overflowStartsAt; i < m_appMenuModel->rowCount(); i++) {
-            const QModelIndex index = m_appMenuModel->index(i, 0);
-            const QVariant data = m_appMenuModel->data(index, AppMenuModel::ActionRole);
-            action = (QAction *)data.value<void *>();
+            action = qobject_cast<TextButton*>(buttons()[i])->action();
             actionMenu->addAction(action);
         }
 
     } else {
-        const QModelIndex modelIndex = m_appMenuModel->index(buttonIndex, 0);
-        const QVariant data = m_appMenuModel->data(modelIndex, AppMenuModel::ActionRole);
-        QAction *itemAction = (QAction *)data.value<void *>();
+        QAction *itemAction = qobject_cast<TextButton*>(buttons()[buttonIndex])->action();
         // qCDebug(category) << "    action" << itemAction;
 
         if (itemAction) {
