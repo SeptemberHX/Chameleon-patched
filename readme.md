@@ -2,8 +2,6 @@ A patched version of Chameleon(default window decoration) on DeepinV20, which al
 
 Inspired by [material-decoration](https://github.com/Zren/material-decoration) and copied lots of code from it :)
 
-> there are bugs if you don't use the screen scale factor 1
-
 ![screenshot](./screenshot/screenshot.png)
 
 How to use:
