@@ -255,7 +255,15 @@ bool AppMenuButtonGroup::eventFilter(QObject *watched, QEvent *event) {
 
         // TODO right to left languages
         if (e->key() == Qt::Key_Left) {
+            // 修复越界问题
             int desiredIndex = m_currentIndex - 1;
+            while (desiredIndex >= 0 && !buttons()[desiredIndex]->isVisible()) {
+                --desiredIndex;
+            }
+            if (desiredIndex == -1) {
+                desiredIndex = 0;
+            }
+
             trigger(desiredIndex);
             return true;
         } else if (e->key() == Qt::Key_Right) {
