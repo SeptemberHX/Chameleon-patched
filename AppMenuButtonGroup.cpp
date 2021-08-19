@@ -163,7 +163,6 @@ void AppMenuButtonGroup::trigger(int buttonIndex) {
         actionMenu->winId();//create window handle
         actionMenu->installEventFilter(this);
         actionMenu->popup(rootPosition);
-        actionMenu->hasFocus();
 
         QMenu *oldMenu = m_currentMenu;
         m_currentMenu = actionMenu;

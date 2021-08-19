@@ -23,8 +23,9 @@ public:
     }
 
     int pixelMetric(PixelMetric metric, const QStyleOption *option, const QWidget *widget) const override {
-        qCDebug(category) << metric;
-        if (metric == QStyle::PM_ButtonIconSize) {
+//        qCDebug(category) << metric;
+        if (metric == QStyle::PM_ButtonIconSize || metric == QStyle::PM_MenuVMargin || metric == QStyle::PM_MenuHMargin
+            || metric == QStyle::PM_MenuPanelWidth) {
             return QProxyStyle::pixelMetric(metric, option, widget) * pixelRatio;
         }
         return QProxyStyle::pixelMetric(metric, option, widget);
